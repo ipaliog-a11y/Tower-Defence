@@ -20,7 +20,10 @@ Update this when a rule is locked, reversed, or left explicitly open.
 | Fortify | **Full immunity** — a saboteur cannot target a fortified link at all | Was a one-shot absorb; now it is the deliberate answer to a fragile root link |
 | Saboteur | Crawls (speed 0.55), crawls harder while hunting (×0.35), 3.5s cut channel | The slowdown IS the tell — the threat must be visible and killable, not a coin flip |
 | Hacker | Temporarily disables wireless links + towers in radius; **destroys nothing** | A second infrastructure threat that cannot end a run outright. Playtested 2026-08-13 and kept as-is |
-| Hacker + Saboteur overlap | Deliberate late-wave spike; currently wave 8 only | Owner rated the combined pressure as good difficulty, not a problem |
+| Hacker placement | Debuts **alone in wave 7**, pairs with Saboteurs in **wave 8** | Late-campaign unit; learn the pulse in isolation before it is combined |
+| Hacker + Saboteur overlap | Deliberate finale spike, wave 8 | Owner rated the combined pressure as good difficulty, not a problem |
+| `hack_resist` tiers | Mid/high-tier tower upgrade addon: **L1 = 50%, L2 = 100%** | Owner spec. Declared in `GameData.HACK_RESIST_TIERS`; nothing sells them yet |
+| Link shielding | A wireless link inherits the **best `hack_resist` of its tower endpoints** | Without it the upgrade is unbuyable-feeling: towers immune but still dark, because the Hacker suppresses the Core's wireless root link |
 | Countermeasures | `hack_resist` stat exists on every tower, 0.0 everywhere | Hook for the upgrade system to sell counterplay later |
 | Tower stats | **Full explicit stat block** per tower, listed in `GameData.TOWER_STAT_KEYS` | Progression/upgrades need concrete stats to modify |
 | Stat access | All combat reads go through `GameState.tower_stat()` | One hook for upgrades; nothing reads `TOWER_DEFS` numbers directly |

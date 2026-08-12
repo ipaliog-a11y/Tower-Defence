@@ -23,11 +23,27 @@ Build: per-tower fire rate + Fortify immunity + slowed Saboteur + new Hacker.
 - **Hacker lands.** Reads as a genuine advanced unit — challenging without feeling unfair.
   The windup telegraph → temporary disable shape is working. Do not nerf it.
 - **Hacker + Saboteur in the same wave is noticeably harder**, and the owner rated that as
-  good difficulty rather than a problem. They currently overlap only in **wave 8**, the last
-  wave, which is the right place for it. Treat that overlap as a deliberate late-game spike:
+  good difficulty rather than a problem. Treat the overlap as a deliberate late-game spike:
   if more waves pair them, escalate on purpose, don't scatter it.
+  *(Correction: an earlier note in this file claimed they overlapped only in wave 8. At the
+  time of this playtest the Hacker was in waves 5, 7 and 8, and **both 7 and 8 paired it
+  with a Saboteur** — so the combined pressure the owner felt may have been wave 7. The wave
+  list has since been changed per owner request, below.)*
 - Fortify-as-immunity plus the visible HUNTING crawl resolved the earlier complaint (a cut
   root link darkening every tower while broke). No repeat of that report this session.
+
+**Owner decisions taken from this session:**
+
+- **Hacker moves later.** Was waves 5/7/8. Now debuts **alone in wave 7** so the pulse can be
+  learned in isolation, then pairs with Saboteurs in **wave 8** as the finale. Wave 5 is back
+  to a Saboteur.
+- **`hack_resist` becomes a mid/high-tier tower upgrade addon**, level 1 = 50%, level 2 =
+  100%. Tiers declared in `GameData.HACK_RESIST_TIERS`. Measured: outage per pulse goes
+  2.51s → 1.26s → 0s.
+- Required a mechanic change to be worth buying: **a wireless link now inherits the best
+  `hack_resist` of its tower endpoints.** Without it, a fully-upgraded board was still
+  blacked out — towers immune but unpowered, because the Hacker suppressed the Core's
+  wireless root link. Verified: at 100%, 0 of 4 towers go dark; previously 4 of 4.
 
 **Still open, not raised as pain this session:**
 

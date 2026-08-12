@@ -788,6 +788,17 @@ func pick_saboteur_link(e: Dictionary, radius: int = GameData.SABOTEUR_CUT_RADIU
 	return best_id
 
 
+## A link is shielded by the best-equipped tower on either end. The Core is not a tower and
+## contributes nothing, so a Core-to-tower link is only as protected as its tower.
+func link_hack_resist(L: Dictionary) -> float:
+	var best := 0.0
+	for node in [L.a, L.b]:
+		if not towers.has(node):
+			continue
+		best = maxf(best, tower_stat(towers[node].type, "hack_resist"))
+	return best
+
+
 ## Hacker pulse: temporarily suppresses wireless links and towers in radius. Nothing is
 ## destroyed — everything comes back by itself. Towers reduce the duration by `hack_resist`,
 ## which is the stat the upgrade system will sell countermeasures against.
@@ -807,7 +818,14 @@ func hacker_pulse(e: Dictionary, cell_size: float) -> void:
 		var mid := Vector2i(int(round((pa.x + pb.x) / 2.0)), int(round((pa.y + pb.y) / 2.0)))
 		if GameData.chebyshev(cell, mid) > radius:
 			continue
-		L.disabled_until = elapsed + duration
+		# A link inherits the best countermeasure of its tower endpoints. Without this,
+		# hack_resist is worthless on any map where the Core's only exit is wireless: the
+		# towers would be immune but still dark, because their power never arrives.
+		var link_resist := clampf(link_hack_resist(L), 0.0, 1.0)
+		var link_effective := duration * (1.0 - link_resist)
+		if link_effective <= 0.0:
+			continue
+		L.disabled_until = elapsed + link_effective
 		hit_links += 1
 		emit_juice("hack_link", {"a": L.a, "b": L.b})
 

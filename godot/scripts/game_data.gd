@@ -27,6 +27,11 @@ const WIRELESS_DRAW := 3
 const SABOTEUR_CHANNEL_TIME := 3.5
 ## Damage on a channeling saboteur needed to break the cut.
 const SABOTEUR_INTERRUPT_DAMAGE := 32.0
+## hack_resist tiers the upgrade system will sell, as mid- and high-tier tower addons.
+## Index = purchased level: 0 none, 1 halves a Hacker's disable, 2 makes it immune.
+## Nothing sets these yet — every tower ships at 0.0 until the upgrade tree exists.
+const HACK_RESIST_TIERS: Array[float] = [0.0, 0.5, 1.0]
+
 ## Speed multiplier applied while a saboteur is hunting a link to cut.
 const SABOTEUR_HUNT_SLOWDOWN := 0.35
 ## The saboteur NOTICES a link from further away than it can cut it. The gap between these
@@ -131,15 +136,18 @@ static var ENEMY_DEFS: Dictionary = {
 	},
 }
 
+## Hacker is a late-campaign unit: it debuts ALONE in wave 7 so the pulse mechanic can be
+## learned in isolation, then pairs with Saboteurs in wave 8 as the finale spike. Waves 0-6
+## teach lane pressure and sabotage only.
 const WAVES: Array = [
 	["grunt", "grunt", "grunt"],
 	["grunt", "grunt", "grunt", "mite", "grunt"],
 	["grunt", "grunt", "saboteur", "grunt", "grunt", "mite"],
 	["brute", "grunt", "grunt", "brute", "mite", "grunt"],
 	["grunt", "runner", "saboteur", "runner", "grunt", "grunt", "mite"],
-	["mite", "brute", "hacker", "brute", "grunt", "mite"],
+	["mite", "brute", "saboteur", "brute", "grunt", "mite"],
 	["runner", "runner", "runner", "grunt", "saboteur", "runner", "grunt"],
-	["brute", "hacker", "runner", "grunt", "brute", "saboteur", "grunt"],
+	["brute", "hacker", "runner", "grunt", "brute", "grunt"],
 	["saboteur", "grunt", "hacker", "saboteur", "runner", "brute", "grunt", "runner", "mite"],
 ]
 

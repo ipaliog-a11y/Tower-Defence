@@ -4,6 +4,25 @@ Newest first. **Every model must add an entry** when they change behavior, struc
 
 ## 2026-08-13
 
+### Hacker moved later + hack_resist tiers defined
+
+Owner playtested the Hacker and kept it ("definitely an advance unit"), then asked for two
+changes: move it later in the campaign, and make `hack_resist` a mid/high-tier upgrade addon
+at 50% / 100%.
+
+- **Hacker debuts alone in wave 7**, then pairs with Saboteurs in wave 8 as the finale.
+  Previously waves 5, 7 and 8 — and *both* 7 and 8 already paired it with a Saboteur, so the
+  combined pressure now happens once, on purpose. Wave 5 is back to a Saboteur.
+- **`GameData.HACK_RESIST_TIERS = [0.0, 0.5, 1.0]`** declares the two purchasable levels.
+  Nothing sells them yet; every tower still ships at 0.0.
+- **Wireless links now inherit the best `hack_resist` of their tower endpoints**
+  (`link_hack_resist()`). This was required to make the upgrade worth buying at all: measured
+  before the change, a board at 100% resist was *still* 4/4 dark during a pulse — towers
+  immune but unpowered, because the Hacker suppressed the Core's wireless root link. After:
+  0/4 dark. Outage per pulse across the three tiers is **2.51s → 1.26s → 0s**.
+- Corrected a wrong claim in `docs/PLAYTEST.md` that the Hacker and Saboteur overlapped only
+  in wave 8; at playtest time they overlapped in waves 7 and 8.
+
 ### Saboteur rework + new Hacker enemy
 
 From a playtest report: a cut root wireless link darkened every tower at once, and being low

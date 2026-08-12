@@ -78,6 +78,13 @@ compared against the `elapsed` combat clock. Tower duration is scaled by `1.0 - 
 Note that on the current map a pulse near the Core's root link darkens **everything**,
 because the Core has no land route out. That is map geometry, not Hacker tuning.
 
+**Links are shielded by their towers.** `link_hack_resist()` returns the best `hack_resist`
+among a link's tower endpoints (the Core is not a tower and contributes nothing), and that
+scales the link's disable duration exactly as it does a tower's. This is load-bearing, not a
+nicety: without it, a board upgraded to 100% resist is *still* fully dark during a pulse —
+every tower immune but unpowered, because the wireless root link was suppressed. Measured
+outage per pulse across `HACK_RESIST_TIERS`: **2.51s → 1.26s → 0s**.
+
 ### Tower stats
 
 Base numbers live in `GameData.TOWER_DEFS`; the modifiable set is `GameData.TOWER_STAT_KEYS`.
