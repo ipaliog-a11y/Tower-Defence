@@ -6,7 +6,8 @@ signal log_line(text: String, kind: String)
 signal toast(text: String)
 signal state_changed
 signal match_over(won: bool, message: String)
-## kind: place|link|wireless|wave|hit|kill|burst|spike_on|spike_off|cut|fortify|channel|channel_break|leak|win|lose|ui|error
+## kind: place|link|wireless|wave|hit|kill|burst|spike_on|spike_off|cut|fortify|channel|
+##       channel_break|hack_windup|hack|hack_link|leak|win|lose|ui|error
 signal juice(kind: String, payload: Dictionary)
 
 enum Phase { BUILD, COMBAT, WON, LOST }
@@ -36,6 +37,8 @@ var wave_leak: int = 0
 var enemies: Array = []
 var spawn_queue: Array = []
 var spawn_timer: float = 0.0
+## Combat clock, used as the reference for temporary Hacker disables.
+var elapsed: float = 0.0
 
 var path_lookup: Dictionary = {}
 var blocked_lookup: Dictionary = {}
@@ -61,6 +64,7 @@ func reset(clear_log: bool = true) -> void:
 	enemies.clear()
 	spawn_queue.clear()
 	spawn_timer = 0.0
+	elapsed = 0.0
 	tool = "capacitor"
 	link_from = ""
 	sell_mode = false
@@ -122,6 +126,17 @@ func emit_juice(kind: String, payload: Dictionary = {}) -> void:
 		"channel_break":
 			if payload.has("pos"):
 				_fx_sparks_world(payload.pos, Color.WHITE, 10)
+		"hack_windup":
+			if payload.has("pos"):
+				_fx_ring_world(payload.pos, Color("a06cf0"), 0.6)
+		"hack":
+			if payload.has("pos"):
+				_fx_ring_world(payload.pos, Color("c39bff"), 0.7)
+				_fx_sparks_world(payload.pos, Color("a06cf0"), 16)
+			_fx_screen_tint(Color("6a3fb0"), 0.4)
+		"hack_link":
+			if payload.has("a") and payload.has("b"):
+				_fx_link_pulse(str(payload.a), str(payload.b), true, Color("a06cf0"), 0.5)
 		"win":
 			_fx_screen_tint(Color("98c379"), 0.5)
 		"lose":
@@ -268,12 +283,24 @@ func can_link(a: String, b: String, wireless: bool) -> Dictionary:
 	return {"ok": true, "dist": dist}
 
 
+## True while a Hacker pulse has this link suppressed. The link still exists — it simply
+## carries no power until the disable expires.
+func link_disabled(L: Dictionary) -> bool:
+	return elapsed < float(L.get("disabled_until", 0.0))
+
+
+func tower_disabled(t: Dictionary) -> bool:
+	return elapsed < float(t.get("disabled_until", 0.0))
+
+
 func powered_nodes() -> Dictionary:
 	var powered: Dictionary = {"core": true}
 	var q: Array[String] = ["core"]
 	while not q.is_empty():
 		var cur: String = q.pop_front()
 		for L in links.values():
+			if link_disabled(L):
+				continue
 			var other := ""
 			if L.a == cur:
 				other = L.b
@@ -587,6 +614,9 @@ func spawn_enemy(type: String) -> void:
 		"wants_second_cut": false,
 		"cuts_done": 0,
 		"channel_dmg": 0.0,
+		"hunting": false,
+		"hack_timer": float(def.get("hack_interval", 0.0)) * 0.5,
+		"hack_winding": 0.0,
 	})
 
 
@@ -620,6 +650,9 @@ func fire_towers(dt: float, powered: Dictionary, cell_size: float) -> void:
 			continue
 		var t: Dictionary = towers[k]
 		t.cooldown = maxf(0.0, float(t.get("cooldown", 0.0)) - dt)
+		if tower_disabled(t):
+			t.fired_recently = false
+			continue
 		var rate := tower_stat(t.type, "fire_rate")
 		if rate <= 0.0:
 			continue
@@ -731,17 +764,21 @@ func enemy_world_pos(e: Dictionary, cell_size: float) -> Vector2:
 	return Vector2((col + 0.5) * cell_size, (row + 0.5) * cell_size)
 
 
-func pick_saboteur_link(e: Dictionary) -> String:
+## Saboteurs cannot touch a fortified link at all — Fortify is protection, not a one-shot
+## absorb. That makes Fortify the deliberate answer to a fragile root link.
+func pick_saboteur_link(e: Dictionary, radius: int = GameData.SABOTEUR_CUT_RADIUS) -> String:
 	var cell := enemy_cell(e)
 	var best_id := ""
 	var best_score := -999.0
 	for id in links:
 		var L: Dictionary = links[id]
+		if L.fortified:
+			continue
 		var pa := node_pos(L.a)
 		var pb := node_pos(L.b)
 		var mid := Vector2i(int(round((pa.x + pb.x) / 2.0)), int(round((pa.y + pb.y) / 2.0)))
 		var dist := GameData.chebyshev(cell, mid)
-		if dist > 2:
+		if dist > radius:
 			continue
 		var score := 40.0 if L.wireless else 20.0
 		score += randf() * 10.0
@@ -749,6 +786,69 @@ func pick_saboteur_link(e: Dictionary) -> String:
 			best_score = score
 			best_id = id
 	return best_id
+
+
+## A link is shielded by the best-equipped tower on either end. The Core is not a tower and
+## contributes nothing, so a Core-to-tower link is only as protected as its tower.
+func link_hack_resist(L: Dictionary) -> float:
+	var best := 0.0
+	for node in [L.a, L.b]:
+		if not towers.has(node):
+			continue
+		best = maxf(best, tower_stat(towers[node].type, "hack_resist"))
+	return best
+
+
+## Hacker pulse: temporarily suppresses wireless links and towers in radius. Nothing is
+## destroyed — everything comes back by itself. Towers reduce the duration by `hack_resist`,
+## which is the stat the upgrade system will sell countermeasures against.
+func hacker_pulse(e: Dictionary, cell_size: float) -> void:
+	var def: Dictionary = GameData.ENEMY_DEFS[e.type]
+	var radius := int(def.get("hack_radius", 3))
+	var duration := float(def.get("hack_duration", 3.0))
+	var cell := enemy_cell(e)
+
+	var hit_links := 0
+	for id in links:
+		var L: Dictionary = links[id]
+		if not L.wireless:
+			continue
+		var pa := node_pos(L.a)
+		var pb := node_pos(L.b)
+		var mid := Vector2i(int(round((pa.x + pb.x) / 2.0)), int(round((pa.y + pb.y) / 2.0)))
+		if GameData.chebyshev(cell, mid) > radius:
+			continue
+		# A link inherits the best countermeasure of its tower endpoints. Without this,
+		# hack_resist is worthless on any map where the Core's only exit is wireless: the
+		# towers would be immune but still dark, because their power never arrives.
+		var link_resist := clampf(link_hack_resist(L), 0.0, 1.0)
+		var link_effective := duration * (1.0 - link_resist)
+		if link_effective <= 0.0:
+			continue
+		L.disabled_until = elapsed + link_effective
+		hit_links += 1
+		emit_juice("hack_link", {"a": L.a, "b": L.b})
+
+	var hit_towers := 0
+	for k in towers:
+		var t: Dictionary = towers[k]
+		if GameData.chebyshev(GameData.parse_key(k), cell) > radius:
+			continue
+		var resist: float = clampf(tower_stat(t.type, "hack_resist"), 0.0, 1.0)
+		var effective := duration * (1.0 - resist)
+		if effective <= 0.0:
+			continue
+		t.disabled_until = elapsed + effective
+		hit_towers += 1
+
+	if hit_links == 0 and hit_towers == 0:
+		return
+	emit_log("Hacker pulse — %d wireless link(s), %d tower(s) offline %.1fs" % [
+		hit_links, hit_towers, duration
+	], "bad")
+	emit_toast("Hacked! Towers offline")
+	emit_juice("hack", {"pos": enemy_world_pos(e, cell_size), "radius": radius})
+	state_changed.emit()
 
 
 func cut_link(id: String) -> bool:
@@ -924,6 +1024,7 @@ func tick(delta: float, cell_size: float) -> void:
 	if phase != Phase.COMBAT:
 		return
 	var dt := delta * sim_speed
+	elapsed += dt
 	var powered := powered_nodes()
 
 	if not spawn_queue.is_empty():
@@ -937,13 +1038,15 @@ func tick(delta: float, cell_size: float) -> void:
 			continue
 		var def: Dictionary = GameData.ENEMY_DEFS[e.type]
 		var is_sab: bool = def.get("saboteur", false)
+		var is_hacker: bool = def.get("hacker", false)
 
 		if is_sab and e.channeling:
 			e.channel_time -= dt
-			if e.channel_dmg >= 20.0:
+			if e.channel_dmg >= GameData.SABOTEUR_INTERRUPT_DAMAGE:
 				e.channeling = false
 				e.channel_target = ""
 				e.channel_dmg = 0.0
+				e.hunting = false
 				emit_log("Saboteur channel interrupted!", "good")
 				emit_toast("Channel broken")
 				emit_juice("channel_break", {"pos": enemy_world_pos(e, cell_size)})
@@ -952,12 +1055,41 @@ func tick(delta: float, cell_size: float) -> void:
 				e.channeling = false
 				e.channel_target = ""
 				e.channel_dmg = 0.0
+				e.hunting = false
 				e.cuts_done += 1
 				if e.cuts_done == 1 and randf() < 0.4:
 					e.wants_second_cut = true
 			continue
 
-		e.progress += GameData.ENEMY_MOVE_SPEED * float(def.speed) * dt
+		if is_hacker:
+			if e.hack_winding > 0.0:
+				# Winding up: the Hacker stalls in place, which is the player's window.
+				e.hack_winding -= dt
+				if e.hack_winding <= 0.0:
+					hacker_pulse(e, cell_size)
+					e.hack_timer = float(def.get("hack_interval", 6.0))
+				continue
+			e.hack_timer -= dt
+			if e.hack_timer <= 0.0:
+				e.hack_winding = float(def.get("hack_windup", 1.4))
+				emit_log("Hacker winding up a pulse", "warn")
+				emit_toast("Hacker charging!")
+				emit_juice("hack_windup", {"pos": enemy_world_pos(e, cell_size)})
+				continue
+
+		# A saboteur that has a cuttable link nearby crawls toward it. The visible slowdown
+		# is the tell, and it buys the player time to shoot it before the channel starts.
+		var speed_mult := 1.0
+		if is_sab and (e.cuts_done == 0 or e.wants_second_cut):
+			# Wider "notice" radius than the cut radius, so there is a slow visible approach
+			# before it commits.
+			e.hunting = not pick_saboteur_link(e, GameData.SABOTEUR_HUNT_RADIUS).is_empty()
+			if e.hunting:
+				speed_mult = GameData.SABOTEUR_HUNT_SLOWDOWN
+		else:
+			e.hunting = false
+
+		e.progress += GameData.ENEMY_MOVE_SPEED * float(def.speed) * speed_mult * dt
 		while e.progress >= 1.0 and e.alive:
 			e.progress -= 1.0
 			e.path_index += 1
@@ -982,7 +1114,7 @@ func tick(delta: float, cell_size: float) -> void:
 				var tgt := pick_saboteur_link(e)
 				if not tgt.is_empty():
 					e.channeling = true
-					e.channel_time = 1.5
+					e.channel_time = GameData.SABOTEUR_CHANNEL_TIME
 					e.channel_target = tgt
 					e.channel_dmg = 0.0
 					e.wants_second_cut = false

@@ -193,7 +193,8 @@ func _build_board_legend() -> void:
 	board_legend.append_text("[b]Core C[/b]: power source · click to repair\n")
 	board_legend.append_text("[b]P → B[/b]: enemy lane · no towers\n")
 	board_legend.append_text("[b]# dark[/b]: scenery · path routes around\n")
-	board_legend.append_text("[b]Saboteur[/b]: cuts links · Fortify (F) blocks one cut")
+	board_legend.append_text("[color=#ff6b4a][b]Saboteur[/b][/color]: crawls to a link, then cuts it (%.1fs) · [b]cannot touch a Fortified link[/b]\n" % GameData.SABOTEUR_CHANNEL_TIME)
+	board_legend.append_text("[color=#c39bff][b]Hacker[/b][/color]: pulses — wireless links + towers offline for a few seconds · nothing is destroyed")
 
 
 func _on_cell_clicked(cell: Vector2i) -> void:
@@ -222,7 +223,7 @@ func _on_juice(kind: String, _payload: Dictionary) -> void:
 	if sfx:
 		sfx.play_event(kind)
 	# Light board shake on heavy events
-	if kind in ["cut", "leak", "burst", "lose"]:
+	if kind in ["cut", "leak", "burst", "lose", "hack"]:
 		_shake_board(6.0 if kind != "lose" else 10.0)
 
 

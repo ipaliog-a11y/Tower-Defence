@@ -20,6 +20,26 @@ const WIRELESS_COST := 22
 const LINK_DRAW := 1
 const WIRELESS_DRAW := 3
 
+## Saboteur cut behaviour.
+## The saboteur must commit: it crawls while hunting and stands still while cutting, which
+## is the player's tell. Long channel + slow approach = plenty of warning, but it also means
+## far more time under fire, so SABOTEUR hp is tuned against this (see ENEMY_DEFS).
+const SABOTEUR_CHANNEL_TIME := 3.5
+## Damage on a channeling saboteur needed to break the cut.
+const SABOTEUR_INTERRUPT_DAMAGE := 32.0
+## hack_resist tiers the upgrade system will sell, as mid- and high-tier tower addons.
+## Index = purchased level: 0 none, 1 halves a Hacker's disable, 2 makes it immune.
+## Nothing sets these yet — every tower ships at 0.0 until the upgrade tree exists.
+const HACK_RESIST_TIERS: Array[float] = [0.0, 0.5, 1.0]
+
+## Speed multiplier applied while a saboteur is hunting a link to cut.
+const SABOTEUR_HUNT_SLOWDOWN := 0.35
+## The saboteur NOTICES a link from further away than it can cut it. The gap between these
+## two radii is the approach phase — the visible crawl that warns the player. If they were
+## equal the saboteur would commit the instant it saw a target and there would be no tell.
+const SABOTEUR_HUNT_RADIUS := 4
+const SABOTEUR_CUT_RADIUS := 2
+
 ## Winding path around central factory + rocks (~27 steps).
 const PATH: Array[Vector2i] = [
 	Vector2i(1, 0), Vector2i(1, 1), Vector2i(1, 2), Vector2i(1, 3),
@@ -48,6 +68,7 @@ const BLOCKED: Array[Vector2i] = [
 const TOWER_STAT_KEYS: Array[String] = [
 	"damage", "fire_rate", "range", "armor_pierce",
 	"draw_idle", "draw_fire", "burst_damage", "spike_damage", "spike_draw",
+	"hack_resist",
 ]
 
 # Colors as RGB so this stays friendly across Godot 4.x
@@ -59,6 +80,8 @@ const TOWER_STAT_KEYS: Array[String] = [
 #   armor_pierce — subtracted from the target's armor before it reduces damage
 #   draw_idle    — power drawn while powered but not firing
 #   draw_fire    — power drawn while actively engaging
+#   hack_resist  — 0..1, fraction of a Hacker's disable duration ignored. 0 on every tower
+#                  today; this is the hook the upgrade system sells "countermeasures" against.
 #
 # DPS is damage * fire_rate. Because enemies are only in range for a fixed time,
 # effective damage also scales with range (more covered path cells) and inversely
@@ -67,7 +90,7 @@ static var TOWER_DEFS: Dictionary = {
 	"capacitor": {
 		"name": "Capacitor", "short": "Ca", "cost": 35,
 		"damage": 6, "fire_rate": 0.85, "range": 2, "armor_pierce": 2,
-		"draw_idle": 3, "draw_fire": 6,
+		"draw_idle": 3, "draw_fire": 6, "hack_resist": 0.0,
 		"burst_damage": 22,
 		"color": Color(0.38, 0.686, 0.937),
 		"role": "Baseline single-target. Burst (B) once/wave.",
@@ -75,21 +98,21 @@ static var TOWER_DEFS: Dictionary = {
 	"transformer": {
 		"name": "Transformer", "short": "Tf", "cost": 28,
 		"damage": 4, "fire_rate": 0.8, "range": 2, "armor_pierce": 1,
-		"draw_idle": 4, "draw_fire": 4,
+		"draw_idle": 4, "draw_fire": 4, "hack_resist": 0.0,
 		"color": Color(0.776, 0.471, 0.867),
 		"role": "Low damage; network control later.",
 	},
 	"regulator": {
 		"name": "Regulator", "short": "Rg", "cost": 32,
 		"damage": 3, "fire_rate": 0.85, "range": 2, "armor_pierce": 0,
-		"draw_idle": 5, "draw_fire": 5,
+		"draw_idle": 5, "draw_fire": 5, "hack_resist": 0.0,
 		"color": Color(0.596, 0.765, 0.475),
 		"role": "Enables Fortify (F) on power links.",
 	},
 	"drainer": {
 		"name": "Drainer", "short": "Dr", "cost": 40,
 		"damage": 9, "fire_rate": 0.75, "range": 3, "armor_pierce": 5,
-		"draw_idle": 8, "draw_fire": 10,
+		"draw_idle": 8, "draw_fire": 10, "hack_resist": 0.0,
 		"spike_damage": 17, "spike_draw": 18,
 		"color": Color(0.878, 0.424, 0.459),
 		"role": "Highest DPS, best vs armor. Spike (V) = more dmg + load.",
@@ -101,9 +124,21 @@ static var ENEMY_DEFS: Dictionary = {
 	"mite": {"name": "Mite", "hp": 38, "speed": 1.1, "leak": 1, "scrap": 3, "color": Color(0.596, 0.765, 0.475), "r": 7.0},
 	"brute": {"name": "Brute", "hp": 130, "speed": 0.85, "leak": 2, "scrap": 7, "color": Color(0.745, 0.314, 0.275), "r": 12.0, "armor": 5},
 	"runner": {"name": "Runner", "hp": 48, "speed": 2.15, "leak": 1, "scrap": 5, "color": Color(0.337, 0.714, 0.761), "r": 8.0},
-	"saboteur": {"name": "Saboteur", "hp": 95, "speed": 1.0, "leak": 2, "scrap": 10, "color": Color(1.0, 0.42, 0.29), "r": 10.0, "saboteur": true},
+	# Saboteur crawls (0.55) and crawls harder while hunting, so it is easy to spot and eats a
+	# lot of fire. HP is raised to match: under the fire-rate model, time in range IS damage.
+	"saboteur": {"name": "Saboteur", "hp": 120, "speed": 0.55, "leak": 2, "scrap": 14, "color": Color(1.0, 0.42, 0.29), "r": 10.0, "saboteur": true},
+	# Hacker does not cut. It pulses, temporarily disabling wireless links and towers in
+	# radius. Nothing it does is permanent — the grid comes back on its own.
+	"hacker": {
+		"name": "Hacker", "hp": 150, "speed": 0.8, "leak": 2, "scrap": 16,
+		"color": Color(0.65, 0.42, 0.95), "r": 11.0, "hacker": true,
+		"hack_radius": 2, "hack_duration": 2.5, "hack_interval": 6.0, "hack_windup": 1.4,
+	},
 }
 
+## Hacker is a late-campaign unit: it debuts ALONE in wave 7 so the pulse mechanic can be
+## learned in isolation, then pairs with Saboteurs in wave 8 as the finale spike. Waves 0-6
+## teach lane pressure and sabotage only.
 const WAVES: Array = [
 	["grunt", "grunt", "grunt"],
 	["grunt", "grunt", "grunt", "mite", "grunt"],
@@ -112,8 +147,8 @@ const WAVES: Array = [
 	["grunt", "runner", "saboteur", "runner", "grunt", "grunt", "mite"],
 	["mite", "brute", "saboteur", "brute", "grunt", "mite"],
 	["runner", "runner", "runner", "grunt", "saboteur", "runner", "grunt"],
-	["brute", "brute", "runner", "grunt", "brute", "runner", "grunt"],
-	["saboteur", "grunt", "brute", "saboteur", "runner", "brute", "grunt", "runner", "mite"],
+	["brute", "hacker", "runner", "grunt", "brute", "grunt"],
+	["saboteur", "grunt", "hacker", "saboteur", "runner", "brute", "grunt", "runner", "mite"],
 ]
 
 

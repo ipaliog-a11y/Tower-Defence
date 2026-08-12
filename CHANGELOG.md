@@ -2,6 +2,62 @@
 
 Newest first. **Every model must add an entry** when they change behavior, structure, or plans.
 
+## 2026-08-13
+
+### Hacker moved later + hack_resist tiers defined
+
+Owner playtested the Hacker and kept it ("definitely an advance unit"), then asked for two
+changes: move it later in the campaign, and make `hack_resist` a mid/high-tier upgrade addon
+at 50% / 100%.
+
+- **Hacker debuts alone in wave 7**, then pairs with Saboteurs in wave 8 as the finale.
+  Previously waves 5, 7 and 8 — and *both* 7 and 8 already paired it with a Saboteur, so the
+  combined pressure now happens once, on purpose. Wave 5 is back to a Saboteur.
+- **`GameData.HACK_RESIST_TIERS = [0.0, 0.5, 1.0]`** declares the two purchasable levels.
+  Nothing sells them yet; every tower still ships at 0.0.
+- **Wireless links now inherit the best `hack_resist` of their tower endpoints**
+  (`link_hack_resist()`). This was required to make the upgrade worth buying at all: measured
+  before the change, a board at 100% resist was *still* 4/4 dark during a pulse — towers
+  immune but unpowered, because the Hacker suppressed the Core's wireless root link. After:
+  0/4 dark. Outage per pulse across the three tiers is **2.51s → 1.26s → 0s**.
+- Corrected a wrong claim in `docs/PLAYTEST.md` that the Hacker and Saboteur overlapped only
+  in wave 8; at playtest time they overlapped in waves 7 and 8.
+
+### Saboteur rework + new Hacker enemy
+
+From a playtest report: a cut root wireless link darkened every tower at once, and being low
+on scrap made it unrecoverable. Diagnosed first — the Core is reachable by land from only
+**4 of 48** buildable cells, so the root link must be wireless; saboteurs score wireless 40
+vs powerline 20 and so always prefer it; and that link's midpoint sits on the enemy path.
+Four choices compounding into a guaranteed loss.
+
+Owner's chosen fix was counterplay rather than changing the map:
+
+- **Fortify is now immunity.** `pick_saboteur_link()` skips fortified links entirely instead
+  of the cut consuming the fortification. Fortifying the root link is now the answer.
+- **Saboteur must commit.** Speed 1.0 → 0.55, plus ×0.35 while hunting; cut channel
+  1.5s → 3.5s; interrupt threshold 20 → 32. Hunt radius (4) is deliberately wider than cut
+  radius (2) so there is a visible approach phase — with both at 2 the tell never rendered.
+- **Saboteur HP 95 → 120**, tuned against the fire-rate model where time in range *is*
+  damage. At 210 it survived a full crossing at 69% HP; at 120 it dies ~22s in while still
+  landing one cut.
+- **New Hacker enemy** — temporarily disables wireless links and towers in radius via
+  `disabled_until` against a new `elapsed` combat clock. Destroys nothing. 1.4s windup
+  telegraph, 2.5s disable, radius 2. Added to waves 5, 7 and 8.
+- **New `hack_resist` tower stat** (0.0 on every tower), in `TOWER_STAT_KEYS` — the hook the
+  upgrade system will sell countermeasures against.
+- Visuals and audio for all of it: HUNTING ring, PULSE windup ring, distinct "HACK" tower
+  state separate from "OFF", suppressed-link rendering, and three new procedural SFX.
+
+**Measured, not assumed** (headless, Godot 4.7.1): fortified links are never selected across
+400 samples; the saboteur is killed at 22.5s after landing one cut; Hacker pulses destroy 0
+links.
+
+**Two things left open.** A Hacker pulse still blacks out 4/4 towers, because the root link
+is wireless — same failure shape as a cut, just time-boxed to 2.5s. And zero-input auto-play
+stalls at wave 3 on all presets; the previous build stalls at wave 3–4, so that wall is
+pre-existing rather than a regression. Both recorded in `docs/STATUS.md`.
+
 ## 2026-08-12
 
 ### Combat — per-tower fire rate, full tower stat block
