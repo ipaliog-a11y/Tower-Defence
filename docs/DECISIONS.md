@@ -19,7 +19,8 @@ Update this when a rule is locked, reversed, or left explicitly open.
 | Firing model | **Per-tower cooldown** (`fire_rate` shots/sec), "first" targeting | Makes enemy `speed` a real stat; replaces per-path-step volleys |
 | Fortify | **Full immunity** — a saboteur cannot target a fortified link at all | Was a one-shot absorb; now it is the deliberate answer to a fragile root link |
 | Saboteur | Crawls (speed 0.55), crawls harder while hunting (×0.35), 3.5s cut channel | The slowdown IS the tell — the threat must be visible and killable, not a coin flip |
-| Hacker | Temporarily disables wireless links + towers in radius; **destroys nothing** | A second infrastructure threat that cannot end a run outright |
+| Hacker | Temporarily disables wireless links + towers in radius; **destroys nothing** | A second infrastructure threat that cannot end a run outright. Playtested 2026-08-13 and kept as-is |
+| Hacker + Saboteur overlap | Deliberate late-wave spike; currently wave 8 only | Owner rated the combined pressure as good difficulty, not a problem |
 | Countermeasures | `hack_resist` stat exists on every tower, 0.0 everywhere | Hook for the upgrade system to sell counterplay later |
 | Tower stats | **Full explicit stat block** per tower, listed in `GameData.TOWER_STAT_KEYS` | Progression/upgrades need concrete stats to modify |
 | Stat access | All combat reads go through `GameState.tower_stat()` | One hook for upgrades; nothing reads `TOWER_DEFS` numbers directly |

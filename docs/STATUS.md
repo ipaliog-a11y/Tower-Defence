@@ -25,7 +25,10 @@ Working in Godot:
 
 ## In progress / next
 
-0. **Playtest the new fire-rate model first.** Towers now fire on per-tower cooldowns
+0. **Hacker is playtested and approved** (2026-08-13) — reads as a real advanced unit, and
+   the Hacker + Saboteur overlap in wave 8 is *wanted* difficulty. Do not nerf either
+   without a fresh playtest saying so. See `docs/PLAYTEST.md`.
+1. **Playtest the new fire-rate model first.** Towers now fire on per-tower cooldowns
    instead of once per enemy path step, so every damage number was re-derived and none of
    it has been played yet. Starting fire rates were chosen to roughly preserve the old
    effective DPS against a `speed 1.0` Grunt; fast and armored enemies will have moved.
