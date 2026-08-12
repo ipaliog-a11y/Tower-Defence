@@ -1,0 +1,486 @@
+[gd_scene load_steps=2 format=3 uid="uid://griddecaymain"]
+
+[ext_resource type="Script" path="res://scripts/main.gd" id="1_main"]
+
+[node name="Main" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_main")
+
+[node name="BG" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.102, 0.11, 0.133, 1)
+
+[node name="Root" type="VBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 8
+
+[node name="TopBar" type="PanelContainer" parent="Root"]
+layout_mode = 2
+
+[node name="TopMargin" type="MarginContainer" parent="Root/TopBar"]
+layout_mode = 2
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 8
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 8
+
+[node name="TopRow" type="HBoxContainer" parent="Root/TopBar/TopMargin"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="Brand" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow"]
+layout_mode = 2
+
+[node name="Title" type="Label" parent="Root/TopBar/TopMargin/TopRow/Brand"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Grid & Decay"
+
+[node name="Subtitle" type="Label" parent="Root/TopBar/TopMargin/TopRow/Brand"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 12
+text = "Godot 4 vertical slice · 10×10 · tower powerlines"
+
+[node name="Stats" type="HBoxContainer" parent="Root/TopBar/TopMargin/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+alignment = 2
+theme_override_constants/separation = 8
+
+[node name="ScrapBox" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow/Stats"]
+layout_mode = 2
+
+[node name="L" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/ScrapBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "SCRAP"
+horizontal_alignment = 1
+
+[node name="ScrapLabel" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/ScrapBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "140"
+horizontal_alignment = 1
+
+[node name="LoadBox" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow/Stats"]
+layout_mode = 2
+
+[node name="L" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/LoadBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "LOAD"
+horizontal_alignment = 1
+
+[node name="LoadLabel" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/LoadBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0/100"
+horizontal_alignment = 1
+
+[node name="HeatBox" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow/Stats"]
+layout_mode = 2
+
+[node name="L" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/HeatBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "HEAT"
+horizontal_alignment = 1
+
+[node name="HeatLabel" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/HeatBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 1
+
+[node name="HpBox" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow/Stats"]
+layout_mode = 2
+custom_minimum_size = Vector2(120, 0)
+
+[node name="L" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/HpBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "BASE HP"
+horizontal_alignment = 1
+
+[node name="HpLabel" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/HpBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.878, 0.702, 0.941, 1)
+theme_override_font_sizes/font_size = 18
+text = "10 / 10"
+horizontal_alignment = 1
+
+[node name="HpBar" type="ProgressBar" parent="Root/TopBar/TopMargin/TopRow/Stats/HpBox"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 10.0
+value = 10.0
+show_percentage = false
+
+[node name="WaveBox" type="VBoxContainer" parent="Root/TopBar/TopMargin/TopRow/Stats"]
+layout_mode = 2
+
+[node name="L" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/WaveBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 10
+text = "WAVE"
+horizontal_alignment = 1
+
+[node name="WaveLabel" type="Label" parent="Root/TopBar/TopMargin/TopRow/Stats/WaveBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "0"
+horizontal_alignment = 1
+
+[node name="Body" type="HBoxContainer" parent="Root"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="BoardColumn" type="VBoxContainer" parent="Root/Body"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 8
+
+[node name="BoardPanel" type="PanelContainer" parent="Root/Body/BoardColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BoardHost" type="CenterContainer" parent="Root/Body/BoardColumn/BoardPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ToastLabel" type="Label" parent="Root/Body/BoardColumn/BoardPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+mouse_filter = 2
+theme_override_colors/font_color = Color(0.91, 0.92, 0.94, 1)
+theme_override_font_sizes/font_size = 14
+text = ""
+horizontal_alignment = 1
+
+[node name="BaseBanner" type="PanelContainer" parent="Root/Body/BoardColumn"]
+layout_mode = 2
+
+[node name="BaseRow" type="HBoxContainer" parent="Root/Body/BoardColumn/BaseBanner"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="BaseTitle" type="Label" parent="Root/Body/BoardColumn/BaseBanner/BaseRow"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.878, 0.702, 0.941, 1)
+text = "BASE HP"
+
+[node name="HpHint" type="Label" parent="Root/Body/BoardColumn/BaseBanner/BaseRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.77, 0.66, 0.83, 1)
+theme_override_font_sizes/font_size = 12
+text = "Enemies that reach B damage this. At 0 you lose."
+
+[node name="LegendColumn" type="VBoxContainer" parent="Root/Body"]
+layout_mode = 2
+custom_minimum_size = Vector2(260, 0)
+theme_override_constants/separation = 8
+
+[node name="TowerLegendPanel" type="PanelContainer" parent="Root/Body/LegendColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TLVBox" type="VBoxContainer" parent="Root/Body/LegendColumn/TowerLegendPanel"]
+layout_mode = 2
+
+[node name="TLTitle" type="Label" parent="Root/Body/LegendColumn/TowerLegendPanel/TLVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.369, 0.784, 0.753, 1)
+text = "TOWER LEGEND"
+
+[node name="TowerLegend" type="VBoxContainer" parent="Root/Body/LegendColumn/TowerLegendPanel/TLVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 6
+
+[node name="BoardLegendPanel" type="PanelContainer" parent="Root/Body/LegendColumn"]
+layout_mode = 2
+
+[node name="BLVBox" type="VBoxContainer" parent="Root/Body/LegendColumn/BoardLegendPanel"]
+layout_mode = 2
+
+[node name="BLTitle" type="Label" parent="Root/Body/LegendColumn/BoardLegendPanel/BLVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.369, 0.784, 0.753, 1)
+text = "LINKS & BOARD"
+
+[node name="BoardLegend" type="RichTextLabel" parent="Root/Body/LegendColumn/BoardLegendPanel/BLVBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 140)
+layout_mode = 2
+bbcode_enabled = true
+fit_content = true
+scroll_active = false
+
+[node name="SideColumn" type="VBoxContainer" parent="Root/Body"]
+layout_mode = 2
+custom_minimum_size = Vector2(280, 0)
+theme_override_constants/separation = 8
+
+[node name="BuildPanel" type="PanelContainer" parent="Root/Body/SideColumn"]
+layout_mode = 2
+
+[node name="BuildVBox" type="VBoxContainer" parent="Root/Body/SideColumn/BuildPanel"]
+layout_mode = 2
+
+[node name="BuildTitle" type="Label" parent="Root/Body/SideColumn/BuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "BUILD"
+
+[node name="BuildHint" type="Label" parent="Root/Body/SideColumn/BuildPanel/BuildVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 11
+text = "Towers occupy cells. Powerlines attach between Core/towers. Auto-link on place when in range."
+autowrap_mode = 3
+
+[node name="ToolBox" type="HFlowContainer" parent="Root/Body/SideColumn/BuildPanel/BuildVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 6
+theme_override_constants/v_separation = 6
+
+[node name="SellBtn" type="Button" parent="Root/Body/SideColumn/BuildPanel/BuildVBox"]
+layout_mode = 2
+text = "Sell mode (70% refund)"
+
+[node name="WavePanel" type="PanelContainer" parent="Root/Body/SideColumn"]
+layout_mode = 2
+
+[node name="WaveVBox" type="VBoxContainer" parent="Root/Body/SideColumn/WavePanel"]
+layout_mode = 2
+
+[node name="WaveTitle" type="Label" parent="Root/Body/SideColumn/WavePanel/WaveVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "WAVE"
+
+[node name="WaveBtns" type="HBoxContainer" parent="Root/Body/SideColumn/WavePanel/WaveVBox"]
+layout_mode = 2
+
+[node name="StartWaveBtn" type="Button" parent="Root/Body/SideColumn/WavePanel/WaveVBox/WaveBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Start wave"
+
+[node name="SpeedBtn" type="Button" parent="Root/Body/SideColumn/WavePanel/WaveVBox/WaveBtns"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "×1"
+
+[node name="WavePreview" type="Label" parent="Root/Body/SideColumn/WavePanel/WaveVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 12
+text = "Next: 3× Grunt"
+
+[node name="ActionPanel" type="PanelContainer" parent="Root/Body/SideColumn"]
+layout_mode = 2
+
+[node name="ActionVBox" type="VBoxContainer" parent="Root/Body/SideColumn/ActionPanel"]
+layout_mode = 2
+
+[node name="ActionTitle" type="Label" parent="Root/Body/SideColumn/ActionPanel/ActionVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "ACTIONS"
+
+[node name="ActionBtns" type="HBoxContainer" parent="Root/Body/SideColumn/ActionPanel/ActionVBox"]
+layout_mode = 2
+
+[node name="BurstBtn" type="Button" parent="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Burst (B)"
+
+[node name="SpikeBtn" type="Button" parent="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Spike (V)"
+
+[node name="FortifyBtn" type="Button" parent="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Fortify (F)"
+
+[node name="ActionStatus" type="Label" parent="Root/Body/SideColumn/ActionPanel/ActionVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 11
+text = "Burst ready"
+
+[node name="PresetPanel" type="PanelContainer" parent="Root/Body/SideColumn"]
+layout_mode = 2
+
+[node name="PresetVBox" type="VBoxContainer" parent="Root/Body/SideColumn/PresetPanel"]
+layout_mode = 2
+
+[node name="PresetTitle" type="Label" parent="Root/Body/SideColumn/PresetPanel/PresetVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "OPENERS"
+
+[node name="PresetBtns" type="HBoxContainer" parent="Root/Body/SideColumn/PresetPanel/PresetVBox"]
+layout_mode = 2
+
+[node name="NorthBtn" type="Button" parent="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "North"
+
+[node name="SouthBtn" type="Button" parent="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "South"
+
+[node name="SplitBtn" type="Button" parent="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns"]
+layout_mode = 2
+size_flags_horizontal = 3
+text = "Split"
+
+[node name="ResetBtn" type="Button" parent="Root/Body/SideColumn/PresetPanel/PresetVBox"]
+layout_mode = 2
+text = "Reset run"
+
+[node name="LogPanel" type="PanelContainer" parent="Root/Body/SideColumn"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogVBox" type="VBoxContainer" parent="Root/Body/SideColumn/LogPanel"]
+layout_mode = 2
+
+[node name="LogTitle" type="Label" parent="Root/Body/SideColumn/LogPanel/LogVBox"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "LOG"
+
+[node name="LogBox" type="RichTextLabel" parent="Root/Body/SideColumn/LogPanel/LogVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 3
+bbcode_enabled = true
+scroll_following = true
+
+[node name="Footer" type="Label" parent="Root"]
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+theme_override_font_sizes/font_size = 11
+text = "1–2 links · 3–6 towers · Space wave · B burst · V spike · F fortify · Esc cancel"
+horizontal_alignment = 1
+
+[node name="Overlay" type="ColorRect" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.04, 0.05, 0.06, 0.75)
+
+[node name="OverlayCenter" type="CenterContainer" parent="Overlay"]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="OverlayCard" type="PanelContainer" parent="Overlay/OverlayCenter"]
+custom_minimum_size = Vector2(380, 0)
+layout_mode = 2
+
+[node name="OverlayVBox" type="VBoxContainer" parent="Overlay/OverlayCenter/OverlayCard"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="OverlayTitle" type="Label" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Title"
+horizontal_alignment = 1
+
+[node name="OverlayBody" type="Label" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.604, 0.639, 0.71, 1)
+text = "Body"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="OverlayBtns" type="HBoxContainer" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox"]
+layout_mode = 2
+alignment = 1
+
+[node name="BtnNorth" type="Button" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "North rail"
+
+[node name="BtnSouth" type="Button" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "South rail"
+
+[node name="BtnSplit" type="Button" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Split"
+
+[node name="BtnEmpty" type="Button" parent="Overlay/OverlayCenter/OverlayCard/OverlayVBox"]
+layout_mode = 2
+text = "Empty build"
+
+[connection signal="pressed" from="Root/Body/SideColumn/BuildPanel/BuildVBox/SellBtn" to="." method="_on_sell_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/WavePanel/WaveVBox/WaveBtns/StartWaveBtn" to="." method="_on_start_wave_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/WavePanel/WaveVBox/WaveBtns/SpeedBtn" to="." method="_on_speed_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns/BurstBtn" to="." method="_on_burst_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns/SpikeBtn" to="." method="_on_spike_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/ActionPanel/ActionVBox/ActionBtns/FortifyBtn" to="." method="_on_fortify_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns/NorthBtn" to="." method="_on_north_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns/SouthBtn" to="." method="_on_south_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/PresetPanel/PresetVBox/PresetBtns/SplitBtn" to="." method="_on_split_pressed"]
+[connection signal="pressed" from="Root/Body/SideColumn/PresetPanel/PresetVBox/ResetBtn" to="." method="_on_reset_pressed"]
+[connection signal="pressed" from="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns/BtnNorth" to="." method="_on_north_pressed"]
+[connection signal="pressed" from="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns/BtnSouth" to="." method="_on_south_pressed"]
+[connection signal="pressed" from="Overlay/OverlayCenter/OverlayCard/OverlayVBox/OverlayBtns/BtnSplit" to="." method="_on_split_pressed"]
+[connection signal="pressed" from="Overlay/OverlayCenter/OverlayCard/OverlayVBox/BtnEmpty" to="." method="_on_empty_pressed"]

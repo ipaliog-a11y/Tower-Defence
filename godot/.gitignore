@@ -1,0 +1,12 @@
+# Godot 4
+.godot/
+export/
+*.translation
+*.tmp
+.import/
+export_presets.cfg
+*.apk
+*.aab
+*.zip
+*.exe
+*.pck

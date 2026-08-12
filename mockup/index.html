@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" />
+  <title>Grid & Decay — Spine District Mockup</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="top-bar">
+      <div class="brand">
+        <strong>Grid & Decay</strong>
+        <span class="sub">10×10 · Winding path · Tower powerlines · Mockup</span>
+      </div>
+      <div class="stats" id="stats">
+        <div class="stat" title="Scrap currency"><span class="label">Scrap</span><span id="stat-scrap">120</span></div>
+        <div class="stat" title="Power draw vs max"><span class="label">Load</span><span id="stat-load">0/100</span></div>
+        <div class="stat" title="Heat stress"><span class="label">Heat</span><span id="stat-heat">0</span></div>
+        <div class="stat stat-hp" title="Base integrity — reach 0 and you lose" id="stat-hp-wrap">
+          <span class="label">Base HP</span>
+          <span id="stat-hp">10 / 10</span>
+          <div class="hp-bar"><div class="hp-fill" id="hp-fill"></div></div>
+        </div>
+        <div class="stat" title="Current wave"><span class="label">Wave</span><span id="stat-wave">0</span></div>
+      </div>
+    </header>
+
+    <main class="layout">
+      <section class="board-column">
+        <div class="board-wrap">
+          <canvas id="board" width="700" height="700" aria-label="Game board"></canvas>
+          <div id="toast" class="toast hidden"></div>
+          <div id="overlay" class="overlay hidden">
+            <div class="overlay-card" id="overlay-card"></div>
+          </div>
+        </div>
+        <div class="base-banner" id="base-banner">
+          <strong>BASE HP</strong>
+          <span id="base-banner-text">10 / 10</span>
+          <div class="hp-bar big"><div class="hp-fill" id="hp-fill-big"></div></div>
+          <span class="base-hint">Enemies that reach <b>B</b> damage this. At 0 you lose.</span>
+        </div>
+      </section>
+
+      <aside class="memo-column">
+        <div class="panel legend-panel">
+          <h2>Tower legend</h2>
+          <div id="tower-legend" class="tower-legend"></div>
+        </div>
+        <div class="panel legend-panel">
+          <h2>Links & board</h2>
+          <div id="board-legend" class="tower-legend board-legend"></div>
+        </div>
+        <div class="panel memo-panel">
+          <h2>Live status</h2>
+          <div id="memo" class="memo"></div>
+        </div>
+      </aside>
+
+      <aside class="sidebar">
+        <div class="panel">
+          <h2>Build</h2>
+          <p class="hint">
+            Towers sit on cells. <b>Powerlines attach between Core/towers</b> (no cable tiles).
+            Place tower → auto-links if in range. Or use <b>Link</b> / <b>Wireless</b> tools.
+          </p>
+          <div class="tools" id="tools"></div>
+          <button type="button" class="btn ghost" id="btn-sell">Sell mode (70% refund)</button>
+        </div>
+
+        <div class="panel">
+          <h2>Wave</h2>
+          <div class="row-btns">
+            <button type="button" class="btn primary" id="btn-wave">Start wave</button>
+            <button type="button" class="btn" id="btn-speed" title="Simulation speed">×1</button>
+          </div>
+          <p class="hint" id="wave-preview">Next: 3× Grunt</p>
+        </div>
+
+        <div class="panel">
+          <h2>Actions <span class="tag">try these</span></h2>
+          <div class="row-btns">
+            <button type="button" class="btn action-btn" id="btn-burst">Cap Burst <kbd>B</kbd></button>
+            <button type="button" class="btn action-btn" id="btn-spike">Drain Spike <kbd>V</kbd></button>
+            <button type="button" class="btn action-btn" id="btn-fortify">Fortify link <kbd>F</kbd></button>
+          </div>
+          <p class="hint" id="action-status">Burst ready · Spike off · Fortify charges: 2</p>
+        </div>
+
+        <div class="panel">
+          <h2>Openers</h2>
+          <p class="hint">Free layouts along the winding lane + leftover Scrap.</p>
+          <div class="row-btns">
+            <button type="button" class="btn" id="btn-north">North rail</button>
+            <button type="button" class="btn" id="btn-south">South rail</button>
+            <button type="button" class="btn" id="btn-split">Split feed</button>
+          </div>
+          <button type="button" class="btn danger" id="btn-reset">Reset run</button>
+        </div>
+
+        <div class="panel log-panel">
+          <h2>Log</h2>
+          <div id="log" class="log"></div>
+        </div>
+      </aside>
+    </main>
+
+    <footer class="footer">
+      10×10 · powerlines on towers ·
+      <kbd>1</kbd>–<kbd>2</kbd> link tools · <kbd>3</kbd>–<kbd>6</kbd> towers · <kbd>Space</kbd> wave · <kbd>B</kbd>/<kbd>V</kbd>/<kbd>F</kbd>
+    </footer>
+  </div>
+  <script src="game.js"></script>
+</body>
+</html>
