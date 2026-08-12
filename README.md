@@ -1,6 +1,6 @@
 # Tower-Defence — Grid & Decay
 
-Infrastructure tower defense concept: **powerlines attach to towers**, winding path, PC + mobile target.
+Infrastructure tower defense: **powerlines attach to towers**, winding path, PC + mobile target.
 
 ## Folders
 
@@ -13,12 +13,12 @@ Infrastructure tower defense concept: **powerlines attach to towers**, winding p
 
 ## Quick start (Godot)
 
-1. Install [Godot 4.3+](https://godotengine.org/download/windows/)  
-2. Open folder `godot/` (contains `project.godot`)  
-3. Press **F5**  
+1. Install [Godot 4.3+](https://godotengine.org/download/windows/) (4.7 works)
+2. Open folder `godot/` (contains `project.godot`)
+3. Press **F5**
 
 Details: [`godot/README.md`](godot/README.md)
 
-## Engine decision
+## Engine
 
 **Godot 4** — solo-friendly, free, good fit for custom grid + link systems and 2.5D later.
