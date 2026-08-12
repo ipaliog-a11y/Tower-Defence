@@ -47,12 +47,15 @@ godot/
   project.godot
   scenes/main.tscn      # UI shell
   scripts/
-    main.gd             # HUD wiring
+    main.gd             # HUD + SFX wiring
     board_view.gd       # Grid draw + input
     game_state.gd       # Match rules
     game_data.gd        # Map, balance, waves
+    sfx_player.gd       # Procedural SFX
   icon.svg
 ```
+
+Repo-wide plans and handoff: `../AGENTS.md`, `../docs/STATUS.md`.
 
 ## Relationship to mockup
 
