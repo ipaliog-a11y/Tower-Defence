@@ -17,12 +17,30 @@ Update this when a rule is locked, reversed, or left explicitly open.
 | Economy | Single currency: Scrap | Build + links + repair |
 | Wear | Repairable (click Core); permanent loss later/hard only | Early runs must not soft-lock |
 | Firing model | **Per-tower cooldown** (`fire_rate` shots/sec), "first" targeting | Makes enemy `speed` a real stat; replaces per-path-step volleys |
+| Fortify | **Full immunity** — a saboteur cannot target a fortified link at all | Was a one-shot absorb; now it is the deliberate answer to a fragile root link |
+| Saboteur | Crawls (speed 0.55), crawls harder while hunting (×0.35), 3.5s cut channel | The slowdown IS the tell — the threat must be visible and killable, not a coin flip |
+| Hacker | Temporarily disables wireless links + towers in radius; **destroys nothing** | A second infrastructure threat that cannot end a run outright |
+| Countermeasures | `hack_resist` stat exists on every tower, 0.0 everywhere | Hook for the upgrade system to sell counterplay later |
 | Tower stats | **Full explicit stat block** per tower, listed in `GameData.TOWER_STAT_KEYS` | Progression/upgrades need concrete stats to modify |
 | Stat access | All combat reads go through `GameState.tower_stat()` | One hook for upgrades; nothing reads `TOWER_DEFS` numbers directly |
 | Start power | Underpowered towers; buffed enemies | 2 Caps must not 0-damage full clear |
 | Meta progression | **Deferred** | Balance combat first |
 | 2.5D / final art | **Deferred** | Rules may still change radically |
 | Juice | Procedural SFX + drawn FX | No asset pack yet |
+
+## Known structural issue — Core is an island
+
+Only **4 of 48** buildable cells are land-reachable from the Core: the enemy path (row 1)
+plus the blocked cells at (0,6)–(0,8) wall it into a row-0 pocket. Consequences:
+
+- Every build must leave the Core by **wireless**, so wireless is mandatory infrastructure
+  rather than the "premium gap tool" this document says it is.
+- All three presets have a single root wireless link whose loss darkens 3–4 of 4 towers.
+- A Hacker pulse near that root link blacks out the **whole grid** for its duration.
+
+Fortify immunity is the current mitigation, not a fix. The owner chose counterplay over
+changing the map; if the collapse still feels bad, moving the Core onto the main landmass is
+the option that removes the cause rather than softening it.
 
 ## Open / expected to change
 

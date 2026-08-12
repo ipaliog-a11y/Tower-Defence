@@ -46,6 +46,15 @@ func play_event(kind: String) -> void:
 			_play(_tone(160.0, 0.1, 0.15))
 		"channel_break":
 			_play(_sweep(600.0, 250.0, 0.1, 0.25))
+		"hack_windup":
+			# Rising digital whine — the audible warning before a pulse lands.
+			_play(_sweep(220.0, 1200.0, 0.5, 0.22))
+		"hack":
+			# Everything powering down at once.
+			_play(_sweep(900.0, 90.0, 0.4, 0.34))
+			_play_delayed(_noise_blip(0.12, 0.26, 160.0), 0.06)
+		"hack_link":
+			_play(_noise_blip(0.05, 0.16, 1400.0))
 		"leak":
 			_play(_tone(120.0, 0.14, 0.3))
 		"win":

@@ -123,10 +123,14 @@ func _draw() -> void:
 	for L in state.links.values():
 		var pa := state.node_pos(L.a)
 		var pb := state.node_pos(L.b)
-		var live: bool = powered.has(L.a) and powered.has(L.b)
-		var energized: bool = powered.has(L.a) or powered.has(L.b)
+		var hacked: bool = state.link_disabled(L)
+		var live: bool = powered.has(L.a) and powered.has(L.b) and not hacked
+		var energized: bool = (powered.has(L.a) or powered.has(L.b)) and not hacked
 		var col: Color
-		if L.wireless:
+		if hacked:
+			# Suppressed by a Hacker pulse — present but carrying nothing.
+			col = Color("a06cf0", 0.35 + 0.25 * sin(tsec * 14.0))
+		elif L.wireless:
 			col = Color("50dcff", 0.9 if energized else 0.25)
 		else:
 			col = Color("d19a66", 0.95 if energized else 0.3)
@@ -175,7 +179,8 @@ func _draw() -> void:
 		var tdict: Dictionary = state.towers[k]
 		var cell := GameData.parse_key(k)
 		var center := cell_center(cell)
-		var on: bool = powered.has(k)
+		var hacked: bool = state.tower_disabled(tdict)
+		var on: bool = powered.has(k) and not hacked
 		var def: Dictionary = GameData.TOWER_DEFS[tdict.type]
 		var hs := s * 0.3
 		var rect := Rect2(center.x - hs, center.y - hs, hs * 2, hs * 2)
@@ -203,7 +208,12 @@ func _draw() -> void:
 		draw_string(ThemeDB.fallback_font, center + Vector2(-8, hs + 10), str(dmg_show), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.7 if on else 0.35))
 		if not on:
 			draw_rect(rect, Color(0, 0, 0, 0.4))
-			draw_string(ThemeDB.fallback_font, center + Vector2(-10, 4), "OFF", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("e06c75"))
+			# Distinguish "no power" from "temporarily hacked" — different problems.
+			if hacked:
+				draw_string(ThemeDB.fallback_font, center + Vector2(-14, 4), "HACK", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("c39bff"))
+				draw_rect(rect.grow(3), Color("a06cf0", 0.5 + 0.4 * sin(tsec * 12.0)), false, 2.0)
+			else:
+				draw_string(ThemeDB.fallback_font, center + Vector2(-10, 4), "OFF", HORIZONTAL_ALIGNMENT_LEFT, -1, 11, Color("e06c75"))
 
 	# Enemies
 	for e in state.enemies:
@@ -215,9 +225,18 @@ func _draw() -> void:
 		draw_circle(pos + Vector2(1, 2), float(def2.r) + 1.0, Color(0, 0, 0, 0.25))
 		draw_circle(pos, float(def2.r), def2.color)
 		if e.channeling:
-			var ch: float = maxf(0.0, e.channel_time / 1.5)
+			var ch: float = maxf(0.0, e.channel_time / GameData.SABOTEUR_CHANNEL_TIME)
 			draw_arc(pos, float(def2.r) + 5.0, 0.0, TAU * ch, 28, Color(1, 1, 1, 0.9), 2.5)
 			draw_arc(pos, float(def2.r) + 9.0, 0.0, TAU, 28, Color(1.0, 0.42, 0.29, 0.25 + 0.2 * sin(tsec * 12.0)), 1.5)
+		elif e.get("hunting", false):
+			# Crawling toward a link it wants to cut — this is the "shoot me now" tell.
+			draw_arc(pos, float(def2.r) + 6.0, 0.0, TAU, 24, Color(1.0, 0.42, 0.29, 0.35 + 0.3 * sin(tsec * 6.0)), 2.0)
+			draw_string(ThemeDB.fallback_font, pos + Vector2(-20, float(def2.r) + 16.0), "HUNTING", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("ff6b4a"))
+		if float(e.get("hack_winding", 0.0)) > 0.0:
+			var def_hw: float = float(GameData.ENEMY_DEFS[e.type].get("hack_windup", 1.4))
+			var wu: float = 1.0 - clampf(float(e.hack_winding) / maxf(def_hw, 0.01), 0.0, 1.0)
+			draw_arc(pos, float(def2.r) + 6.0 + 10.0 * wu, 0.0, TAU, 32, Color(0.65, 0.42, 0.95, 0.9 - 0.5 * wu), 2.5)
+			draw_string(ThemeDB.fallback_font, pos + Vector2(-18, float(def2.r) + 16.0), "PULSE", HORIZONTAL_ALIGNMENT_LEFT, -1, 9, Color("c39bff"))
 		draw_string(ThemeDB.fallback_font, pos + Vector2(-16, -float(def2.r) - 10), def2.name, HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color.WHITE)
 		var bw := 26.0
 		var bar_y := pos.y - float(def2.r) - 6.0

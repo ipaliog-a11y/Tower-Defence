@@ -54,6 +54,30 @@ Consequences when tuning:
   covers — but it is no longer the *only* DPS lever.
 - Runners are meaningfully harder than their HP suggests; Brutes are softer.
 
+### Infrastructure threats
+
+**Saboteur** — permanently cuts one link, and must commit to do it:
+
+1. *Hunting.* Within `SABOTEUR_HUNT_RADIUS` (4) of a cuttable link it crawls at
+   `SABOTEUR_HUNT_SLOWDOWN` (×0.35 on top of its already-low 0.55 speed). `e.hunting` drives
+   the on-board "HUNTING" tell.
+2. *Channelling.* Within `SABOTEUR_CUT_RADIUS` (2) it stops for `SABOTEUR_CHANNEL_TIME`
+   (3.5s). Taking `SABOTEUR_INTERRUPT_DAMAGE` (32) during that window breaks the cut.
+
+The two radii **must stay different**. If they are equal the saboteur commits the instant it
+sees a target, the approach phase collapses to zero frames, and the tell never renders.
+
+`pick_saboteur_link()` skips fortified links entirely, so Fortify is immunity rather than a
+one-shot absorb.
+
+**Hacker** — destroys nothing. On a `hack_interval` timer it stalls for `hack_windup`, then
+`hacker_pulse()` sets `disabled_until` on wireless links and towers within `hack_radius`.
+`powered_nodes()` skips disabled links and `fire_towers()` skips disabled towers, both
+compared against the `elapsed` combat clock. Tower duration is scaled by `1.0 - hack_resist`.
+
+Note that on the current map a pulse near the Core's root link darkens **everything**,
+because the Core has no land route out. That is map geometry, not Hacker tuning.
+
 ### Tower stats
 
 Base numbers live in `GameData.TOWER_DEFS`; the modifiable set is `GameData.TOWER_STAT_KEYS`.
