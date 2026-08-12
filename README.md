@@ -20,7 +20,7 @@ Infrastructure tower defense: **powerlines attach to towers**, winding path, PC 
 
 ## Quick start
 
-1. Install [Godot 4.3+](https://godotengine.org/download/windows/) (4.7 works)
+1. Install [Godot 4.7](https://godotengine.org/download/windows/) — the project is saved at 4.7 and older 4.x will ask to convert it
 2. Import `godot/project.godot`
 3. Press **F5**
 

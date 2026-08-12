@@ -23,6 +23,11 @@ Working in Godot:
 
 ## In progress / next
 
+0. **Playtest the new fire-rate model first.** Towers now fire on per-tower cooldowns
+   instead of once per enemy path step, so every damage number was re-derived and none of
+   it has been played yet. Starting fire rates were chosen to roughly preserve the old
+   effective DPS against a `speed 1.0` Grunt; fast and armored enemies will have moved.
+   Expect Runners to be harder and Brutes softer. Numbers live in `GameData.TOWER_DEFS`.
 1. **Playtest + balance** (owner is playtesting; juice already added)
 2. Document playtest notes in `docs/PLAYTEST.md` when they arrive
 3. **Do not start 2.5D assets** until rules stabilize (owner may still make radical gameplay changes)
@@ -45,6 +50,7 @@ Working in Godot:
 - Combat load/heat still easy to ignore vs DPS/pathing
 - Wireless is **not** saboteur immunity (premium bridge only)
 - Design doc still describes older conduit-tile / 8×8 rules in places
+- **Tower fire rates and damage are freshly re-derived and unplayed** — see below
 
 ## Owner intent
 
