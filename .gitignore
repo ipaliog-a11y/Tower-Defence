@@ -1,0 +1,31 @@
+# OS
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Editors / IDE
+.vs/
+.vscode/
+*.swp
+*~
+
+# Godot
+**/.godot/
+**/export/
+*.translation
+export_presets.cfg
+
+# Builds / binaries
+*.exe
+*.pck
+*.zip
+*.apk
+*.aab
+*.dll
+
+# Logs / temp
+*.log
+*.tmp
+
+# Node (if mockup tooling appears)
+node_modules/
