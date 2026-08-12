@@ -6,7 +6,7 @@ This repo is developed by **multiple AI models**. Read this file first, then `do
 
 **Working title:** Grid & Decay  
 **Genre:** Infrastructure tower defense (2.5D later; currently 2D prototype art)  
-**Engine:** Godot 4.3+ (verified **4.7.1**)  
+**Engine:** Godot **4.7** — `project.godot` is saved at `config/features = "4.7"`, and the `.uid` files need 4.4+. Older 4.x will offer to convert the project; decline and install 4.7 instead.  
 **Platforms (intent):** PC first, mobile later  
 **GitHub:** https://github.com/ipaliog-a11y/Tower-Defence  
 **Default branch:** `main`
@@ -26,9 +26,11 @@ This repo is developed by **multiple AI models**. Read this file first, then `do
 
 ## How to run
 
-1. Open `godot/project.godot` in Godot 4.3+ (4.7 works).
+1. Open `godot/project.godot` in Godot 4.7.
 2. Press **F5**.
 3. Pick North / South / Split or build empty.
+
+There is no test suite and no CI. "Verified" means: launched it, played a wave, watched the log panel.
 
 ## Before you change anything
 
@@ -56,6 +58,8 @@ This repo is developed by **multiple AI models**. Read this file first, then `do
 | `godot/scenes/main.tscn` | UI shell |
 
 Coordinate system: `Vector2i.x = row`, `Vector2i.y = col`. Screen x = col, screen y = row.
+
+**Towers have no rate of fire.** Damage is dealt per *path step*, not per second — read `docs/ARCHITECTURE.md#combat` before touching any balance number, or your tuning will not do what you expect.
 
 ## Flexibility
 

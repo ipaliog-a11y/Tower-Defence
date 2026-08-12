@@ -160,12 +160,13 @@ func _build_tower_legend() -> void:
 		title.add_theme_color_override("font_color", def.color)
 		var stats := Label.new()
 		var extra := ""
-		if def.has("burst"):
-			extra += " · Burst %d" % def.burst
-		if def.has("spike_dmg"):
-			extra += " · Spike %d (draw %d)" % [def.spike_dmg, def.spike_draw]
-		stats.text = "DMG %d%s\nRange %d · Draw idle %d / fire %d" % [
-			def.dmg, extra, def.range, def.draw_idle, def.draw_fire
+		if def.has("burst_damage"):
+			extra += " · Burst %d" % def.burst_damage
+		if def.has("spike_damage"):
+			extra += " · Spike %d (draw %d)" % [def.spike_damage, def.spike_draw]
+		stats.text = "DMG %d · %.2f/s = %.1f DPS%s\nRange %d · Pierce %d · Draw idle %d / fire %d" % [
+			def.damage, def.fire_rate, float(def.damage) * float(def.fire_rate), extra,
+			def.range, def.armor_pierce, def.draw_idle, def.draw_fire
 		]
 		stats.add_theme_font_size_override("font_size", 12)
 		stats.add_theme_color_override("font_color", Color("9aa3b5"))
