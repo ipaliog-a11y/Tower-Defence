@@ -199,7 +199,7 @@ func _draw() -> void:
 			var sp := 0.6 + 0.4 * sin(tsec * 8.0)
 			draw_rect(rect, Color(1.0, 0.54, 0.48, sp), false, 2.0)
 		draw_string(ThemeDB.fallback_font, center + Vector2(-8, 4), def.short, HORIZONTAL_ALIGNMENT_LEFT, -1, 13, Color("0d1117"))
-		var dmg_show: int = int(def.spike_dmg) if (tdict.type == "drainer" and state.spike_on) else int(def.dmg)
+		var dmg_show: int = int(def.spike_damage) if (tdict.type == "drainer" and state.spike_on) else int(def.damage)
 		draw_string(ThemeDB.fallback_font, center + Vector2(-8, hs + 10), str(dmg_show), HORIZONTAL_ALIGNMENT_LEFT, -1, 10, Color(1, 1, 1, 0.7 if on else 0.35))
 		if not on:
 			draw_rect(rect, Color(0, 0, 0, 0.4))

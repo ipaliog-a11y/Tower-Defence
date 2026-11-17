@@ -42,32 +42,57 @@ const BLOCKED: Array[Vector2i] = [
 	Vector2i(2, 8), Vector2i(2, 9),
 ]
 
-# Colors as RGB so this stays friendly across Godot 4.2–4.3
+## Numeric tower stats that the (future) upgrade system is allowed to modify.
+## Anything not in this list is identity/presentation and must not be scaled.
+## See GameState.tower_stats() — that is the single hook progression plugs into.
+const TOWER_STAT_KEYS: Array[String] = [
+	"damage", "fire_rate", "range", "armor_pierce",
+	"draw_idle", "draw_fire", "burst_damage", "spike_damage", "spike_draw",
+]
+
+# Colors as RGB so this stays friendly across Godot 4.x
+#
+# Stat block, per tower:
+#   damage       — per shot, before enemy armor
+#   fire_rate    — shots per second (cooldown = 1.0 / fire_rate)
+#   range        — Chebyshev cells
+#   armor_pierce — subtracted from the target's armor before it reduces damage
+#   draw_idle    — power drawn while powered but not firing
+#   draw_fire    — power drawn while actively engaging
+#
+# DPS is damage * fire_rate. Because enemies are only in range for a fixed time,
+# effective damage also scales with range (more covered path cells) and inversely
+# with enemy speed. See docs/ARCHITECTURE.md#combat.
 static var TOWER_DEFS: Dictionary = {
 	"capacitor": {
 		"name": "Capacitor", "short": "Ca", "cost": 35,
-		"draw_idle": 3, "draw_fire": 6, "range": 2, "dmg": 8, "burst": 22,
+		"damage": 6, "fire_rate": 0.85, "range": 2, "armor_pierce": 2,
+		"draw_idle": 3, "draw_fire": 6,
+		"burst_damage": 22,
 		"color": Color(0.38, 0.686, 0.937),
 		"role": "Baseline single-target. Burst (B) once/wave.",
 	},
 	"transformer": {
 		"name": "Transformer", "short": "Tf", "cost": 28,
-		"draw_idle": 4, "draw_fire": 4, "range": 2, "dmg": 5,
+		"damage": 4, "fire_rate": 0.8, "range": 2, "armor_pierce": 1,
+		"draw_idle": 4, "draw_fire": 4,
 		"color": Color(0.776, 0.471, 0.867),
 		"role": "Low damage; network control later.",
 	},
 	"regulator": {
 		"name": "Regulator", "short": "Rg", "cost": 32,
-		"draw_idle": 5, "draw_fire": 5, "range": 2, "dmg": 4,
+		"damage": 3, "fire_rate": 0.85, "range": 2, "armor_pierce": 0,
+		"draw_idle": 5, "draw_fire": 5,
 		"color": Color(0.596, 0.765, 0.475),
 		"role": "Enables Fortify (F) on power links.",
 	},
 	"drainer": {
 		"name": "Drainer", "short": "Dr", "cost": 40,
-		"draw_idle": 8, "draw_fire": 10, "range": 3, "dmg": 11,
-		"spike_dmg": 20, "spike_draw": 18,
+		"damage": 9, "fire_rate": 0.75, "range": 3, "armor_pierce": 5,
+		"draw_idle": 8, "draw_fire": 10,
+		"spike_damage": 17, "spike_draw": 18,
 		"color": Color(0.878, 0.424, 0.459),
-		"role": "Highest DPS. Spike (V) = more dmg + load.",
+		"role": "Highest DPS, best vs armor. Spike (V) = more dmg + load.",
 	},
 }
 

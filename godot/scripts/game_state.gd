@@ -36,7 +36,6 @@ var wave_leak: int = 0
 var enemies: Array = []
 var spawn_queue: Array = []
 var spawn_timer: float = 0.0
-var channel_tick: float = 0.0
 
 var path_lookup: Dictionary = {}
 var blocked_lookup: Dictionary = {}
@@ -296,6 +295,18 @@ func link_tax() -> int:
 	return t
 
 
+## Resolves one numeric tower stat. **This is the hook the progression / upgrade system
+## plugs into** — apply purchased modifiers here and every combat path picks them up,
+## because no combat code reads GameData.TOWER_DEFS numbers directly.
+## `key` must be one of GameData.TOWER_STAT_KEYS.
+func tower_stat(type: String, key: String) -> float:
+	var base: float = float(GameData.TOWER_DEFS[type].get(key, 0.0))
+	# Upgrades land here, e.g.:
+	#   base += flat_bonus(type, key)
+	#   base *= mult_bonus(type, key)
+	return base
+
+
 func compute_load(use_fire: bool) -> Dictionary:
 	var powered := powered_nodes()
 	var draw := 0
@@ -305,14 +316,13 @@ func compute_load(use_fire: bool) -> Dictionary:
 			continue
 		powered_towers += 1
 		var t: Dictionary = towers[k]
-		var def: Dictionary = GameData.TOWER_DEFS[t.type]
 		if use_fire or t.fired_this_wave or (phase == Phase.COMBAT and t.fired_recently):
 			if t.type == "drainer" and spike_on:
-				draw += int(def.spike_draw)
+				draw += int(tower_stat(t.type, "spike_draw"))
 			else:
-				draw += int(def.draw_fire)
+				draw += int(tower_stat(t.type, "draw_fire"))
 		else:
-			draw += int(def.draw_idle)
+			draw += int(tower_stat(t.type, "draw_idle"))
 	var tax := link_tax()
 	draw += tax
 	return {"draw": draw, "max": max_power, "powered_towers": powered_towers, "powered": powered, "tax": tax}
@@ -386,7 +396,10 @@ func place_tower(cell: Vector2i, type: String, free: bool = false) -> bool:
 		return false
 	if not free:
 		scrap -= cost
-	towers[k] = {"type": type, "fired_this_wave": false, "fired_recently": false, "place_flash": 0.35}
+	towers[k] = {
+		"type": type, "fired_this_wave": false, "fired_recently": false,
+		"cooldown": 0.0, "place_flash": 0.35,
+	}
 	if not free:
 		emit_log("Built %s at %s" % [GameData.TOWER_DEFS[type].name, k])
 		emit_juice("place", {"cell": cell, "type": type})
@@ -548,11 +561,11 @@ func start_wave() -> void:
 	fortify_charges = (2 + maxi(0, regs - 1)) if regs > 0 else 0
 	fortify_armed = false
 	wave_leak = 0
-	channel_tick = 0.0
 	link_from = ""
 	for t in towers.values():
 		t.fired_this_wave = false
 		t.fired_recently = false
+		t.cooldown = 0.0
 	emit_log("Wave %d started (%d enemies)" % [wave_index, spawn_queue.size()])
 	emit_toast("Wave %d · HP %d/%d" % [wave_index, integrity, GameData.MAX_INTEGRITY])
 	emit_juice("wave", {"wave": wave_index})
@@ -582,17 +595,61 @@ func enemy_cell(e: Dictionary) -> Vector2i:
 	return GameData.PATH[idx]
 
 
-func towers_in_range(cell: Vector2i, powered: Dictionary) -> Array:
-	var list: Array = []
+## "First" targeting: the enemy furthest along the path (nearest the base) within range.
+func acquire_target(pos: Vector2i, range_cells: int) -> Dictionary:
+	var best: Dictionary = {}
+	var best_progress := -1.0
+	for e in enemies:
+		if not e.alive:
+			continue
+		if GameData.chebyshev(pos, enemy_cell(e)) > range_cells:
+			continue
+		var prog := float(e.path_index) + float(e.progress)
+		if prog > best_progress:
+			best_progress = prog
+			best = e
+	return best
+
+
+## Every powered tower runs its own cooldown and fires independently. Enemy `speed` is a
+## real defensive stat under this model: a faster enemy spends less time inside a tower's
+## range and therefore eats fewer shots.
+func fire_towers(dt: float, powered: Dictionary, cell_size: float) -> void:
 	for k in towers:
 		if not powered.has(k):
 			continue
-		var pos := GameData.parse_key(k)
 		var t: Dictionary = towers[k]
+		t.cooldown = maxf(0.0, float(t.get("cooldown", 0.0)) - dt)
+		var rate := tower_stat(t.type, "fire_rate")
+		if rate <= 0.0:
+			continue
+		var pos := GameData.parse_key(k)
+		var target := acquire_target(pos, int(tower_stat(t.type, "range")))
+		if target.is_empty():
+			t.fired_recently = false
+			continue
+		# Holding a target counts as engaged for load purposes, even between shots.
+		t.fired_recently = true
+		if t.cooldown > 0.0:
+			continue
+		t.cooldown = 1.0 / rate
 		var def: Dictionary = GameData.TOWER_DEFS[t.type]
-		if GameData.chebyshev(pos, cell) <= int(def.range):
-			list.append({"k": k, "t": t, "def": def, "pos": pos})
-	return list
+		var dmg := tower_stat(t.type, "damage")
+		if t.type == "drainer" and spike_on:
+			dmg = tower_stat(t.type, "spike_damage")
+		var dealt := damage_enemy(target, dmg, {
+			"pos": pos,
+			"to_world": enemy_world_pos(target, cell_size),
+			"color": def.color,
+			"name": def.short,
+			"tower": t,
+			"pierce": tower_stat(t.type, "armor_pierce"),
+		})
+		# Return fire on a channeling saboteur builds toward interrupting the cut.
+		if target.get("channeling", false):
+			target.channel_dmg += dealt
+		if target.hp <= 0.0:
+			kill_enemy(target)
 
 
 func spawn_hit_fx(from: Vector2i, to_world: Vector2, dmg: int, color: Color, _label: String) -> void:
@@ -635,7 +692,9 @@ func damage_enemy(e: Dictionary, amount: float, meta: Dictionary = {}) -> float:
 	var def: Dictionary = GameData.ENEMY_DEFS[e.type]
 	var dmg := amount
 	if def.has("armor"):
-		dmg = maxf(1.0, dmg - float(def.armor))
+		# armor_pierce eats armor first; whatever is left still subtracts flat.
+		var armor := maxf(0.0, float(def.armor) - float(meta.get("pierce", 0.0)))
+		dmg = maxf(1.0, dmg - armor)
 	e.hp -= dmg
 	if not meta.is_empty():
 		spawn_hit_fx(meta.pos, meta.to_world, int(dmg), meta.color, meta.name)
@@ -670,23 +729,6 @@ func enemy_world_pos(e: Dictionary, cell_size: float) -> Vector2:
 	var col := lerpf(float(a2.y), float(b2.y), t)
 	var row := lerpf(float(a2.x), float(b2.x), t)
 	return Vector2((col + 0.5) * cell_size, (row + 0.5) * cell_size)
-
-
-func fire_volley(e: Dictionary, cell: Vector2i, powered: Dictionary, cell_size: float) -> float:
-	var total := 0.0
-	var to_world := enemy_world_pos(e, cell_size)
-	for tw in towers_in_range(cell, powered):
-		var dmg: float = float(tw.def.dmg)
-		if tw.t.type == "drainer" and spike_on:
-			dmg = float(tw.def.spike_dmg)
-		total += damage_enemy(e, dmg, {
-			"pos": tw.pos,
-			"to_world": to_world,
-			"color": tw.def.color,
-			"name": tw.def.short,
-			"tower": tw.t,
-		})
-	return total
 
 
 func pick_saboteur_link(e: Dictionary) -> String:
@@ -786,7 +828,7 @@ func do_burst(cell_size: float) -> void:
 			continue
 		var cell := enemy_cell(e)
 		for cap in caps:
-			if GameData.chebyshev(cap.pos, cell) <= int(GameData.TOWER_DEFS.capacitor.range):
+			if GameData.chebyshev(cap.pos, cell) <= int(tower_stat("capacitor", "range")):
 				if e.hp < best_hp:
 					best_hp = e.hp
 					best = e
@@ -796,12 +838,13 @@ func do_burst(cell_size: float) -> void:
 	burst_used = true
 	var cap0: Dictionary = caps[0]
 	var to_w := enemy_world_pos(best, cell_size)
-	damage_enemy(best, float(GameData.TOWER_DEFS.capacitor.burst), {
+	damage_enemy(best, tower_stat("capacitor", "burst_damage"), {
 		"pos": cap0.pos,
 		"to_world": to_w,
 		"color": GameData.TOWER_DEFS.capacitor.color,
 		"name": "Ca BURST",
 		"tower": cap0.t,
+		"pierce": tower_stat("capacitor", "armor_pierce"),
 	})
 	emit_log("Capacitor BURST!", "warn")
 	emit_toast("BURST!")
@@ -889,8 +932,6 @@ func tick(delta: float, cell_size: float) -> void:
 			spawn_enemy(str(spawn_queue.pop_front()))
 			spawn_timer = GameData.SPAWN_INTERVAL
 
-	channel_tick += dt
-
 	for e in enemies:
 		if not e.alive:
 			continue
@@ -899,10 +940,6 @@ func tick(delta: float, cell_size: float) -> void:
 
 		if is_sab and e.channeling:
 			e.channel_time -= dt
-			if channel_tick >= 0.45:
-				var cell := enemy_cell(e)
-				e.channel_dmg += fire_volley(e, cell, powered, cell_size)
-				channel_tick = 0.0
 			if e.channel_dmg >= 20.0:
 				e.channeling = false
 				e.channel_target = ""
@@ -918,8 +955,6 @@ func tick(delta: float, cell_size: float) -> void:
 				e.cuts_done += 1
 				if e.cuts_done == 1 and randf() < 0.4:
 					e.wants_second_cut = true
-			if e.hp <= 0.0:
-				kill_enemy(e)
 			continue
 
 		e.progress += GameData.ENEMY_MOVE_SPEED * float(def.speed) * dt
@@ -943,11 +978,6 @@ func tick(delta: float, cell_size: float) -> void:
 					state_changed.emit()
 					return
 				break
-			var cell2 := enemy_cell(e)
-			fire_volley(e, cell2, powered, cell_size)
-			if e.hp <= 0.0:
-				kill_enemy(e)
-				break
 			if is_sab and e.path_index < GameData.PATH.size() - 1 and (e.cuts_done == 0 or e.wants_second_cut):
 				var tgt := pick_saboteur_link(e)
 				if not tgt.is_empty():
@@ -960,6 +990,9 @@ func tick(delta: float, cell_size: float) -> void:
 					emit_toast("Saboteur cutting a powerline!")
 					emit_juice("channel", {"pos": enemy_world_pos(e, cell_size)})
 					break
+
+	# Towers fire on their own cooldowns, after movement so they shoot current positions.
+	fire_towers(dt, powered, cell_size)
 
 	enemies = enemies.filter(func(e): return e.alive)
 	if spawn_queue.is_empty() and enemies.is_empty():

@@ -16,6 +16,9 @@ Update this when a rule is locked, reversed, or left explicitly open.
 | Lose condition | Base Integrity → 0 | Clear, mobile-friendly |
 | Economy | Single currency: Scrap | Build + links + repair |
 | Wear | Repairable (click Core); permanent loss later/hard only | Early runs must not soft-lock |
+| Firing model | **Per-tower cooldown** (`fire_rate` shots/sec), "first" targeting | Makes enemy `speed` a real stat; replaces per-path-step volleys |
+| Tower stats | **Full explicit stat block** per tower, listed in `GameData.TOWER_STAT_KEYS` | Progression/upgrades need concrete stats to modify |
+| Stat access | All combat reads go through `GameState.tower_stat()` | One hook for upgrades; nothing reads `TOWER_DEFS` numbers directly |
 | Start power | Underpowered towers; buffed enemies | 2 Caps must not 0-damage full clear |
 | Meta progression | **Deferred** | Balance combat first |
 | 2.5D / final art | **Deferred** | Rules may still change radically |
@@ -23,7 +26,14 @@ Update this when a rule is locked, reversed, or left explicitly open.
 
 ## Open / expected to change
 
-- Exact tower stats, wave lists, link ranges/costs
+- Exact tower stats, wave lists, link ranges/costs — **all current fire-rate/damage numbers
+  are a first derivation and unplayed**
+- Which stats the upgrade system actually sells (the stat block is deliberately wider than
+  the likely first upgrade tree)
+- Targeting mode — currently always "first"; per-tower selectable targeting is a candidate
+  upgrade/QoL feature
+- Enemy stat block: enemies still carry a thinner set (hp/speed/armor/leak/scrap) than
+  towers do, and will likely need the same treatment
 - Whether wireless should resist saboteurs (currently **no**)
 - Map count and board size mix
 - In-run upgrades vs meta shop
@@ -38,5 +48,6 @@ Update this when a rule is locked, reversed, or left explicitly open.
 - Wireless transmitters mounted on roadside cable nodes
 - Dual currency (Scrap + “build points”)
 - Permanent max-power loss in default mode
+- Damage dealt once per enemy path step (replaced by per-tower fire rate)
 
 See also the exploration draft `Grid_and_Decay_Design_Document.md` — historical, partially obsolete.

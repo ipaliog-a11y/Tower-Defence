@@ -10,7 +10,7 @@ Vertical slice port of the browser mockup:
 
 ## Install Godot
 
-1. Download **Godot 4.3+** (standard, not .NET unless you prefer C#):  
+1. Download **Godot 4.7** (standard, not .NET unless you prefer C#):  
    https://godotengine.org/download/windows/  
 2. Unzip anywhere (portable). No installer required.  
 3. Run `Godot_v4.x_win64.exe`.
@@ -24,7 +24,7 @@ Vertical slice port of the browser mockup:
 2. Select `project.godot` → **Import & Edit**.  
 3. Press **F5** (or Play) to run.
 
-If Godot asks to upgrade/fix settings, accept defaults for 4.2–4.3.
+If Godot offers to convert the project, you are on an older 4.x — cancel and install 4.7.
 
 ## Controls
 
@@ -59,8 +59,10 @@ Repo-wide plans and handoff: `../AGENTS.md`, `../docs/STATUS.md`.
 
 ## Relationship to mockup
 
-`../mockup/` remains the web prototype.  
-Balance and map data were copied into `game_data.gd` — keep them in sync when you change rules.
+`../mockup/` was the origin of this port and is now **reference only** — do not sync balance
+back into it, and do not treat it as current rules. `game_data.gd` + `game_state.gd` are the
+source of truth (see `../AGENTS.md`). The mockup still uses the old per-path-step damage
+model and has no fire rates.
 
 ## Juice (current)
 
